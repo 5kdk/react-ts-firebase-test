@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react';
 import './App.css';
 import { Auth } from './components/Auth';
-import { db } from './config/firebase';
+import { db, auth } from './config/firebase';
 import {
   getDocs,
   collection,
   addDoc,
   deleteDoc,
+  updateDoc,
   doc,
 } from 'firebase/firestore';
 
@@ -24,6 +25,8 @@ function App() {
   const [newReleaseDate, setNewReleaseDate] = useState(0);
   const [isNewMovieOscar, setIsNewMovieOscar] = useState(false);
 
+  const [updatedTitle, setUpdatedTitle] = useState('');
+
   const moviesCollectionRef = collection(db, 'movies');
 
   const getMovieList = async () => {
@@ -32,16 +35,12 @@ function App() {
       const filteredData = data.docs.map(doc => ({
         ...doc.data(),
         id: doc.id,
-      })) as Movie[]; // Use the 'as Movie[]' assertion to tell TypeScript the type of filteredData
+      })) as Movie[];
       setMovieList(filteredData);
     } catch (err) {
       console.error(err);
     }
   };
-
-  useEffect(() => {
-    getMovieList();
-  }, []);
 
   const onSubmitMovie = async () => {
     try {
@@ -50,7 +49,6 @@ function App() {
         releaseDate: newReleaseDate,
         receivedAnOscar: isNewMovieOscar,
       });
-
       getMovieList();
     } catch (err) {
       console.error(err);
@@ -67,6 +65,21 @@ function App() {
       console.error(err);
     }
   };
+
+  const updateMovieTitle = async (id: string) => {
+    try {
+      const movieDoc = doc(db, 'movies', id);
+      await updateDoc(movieDoc, { title: updatedTitle });
+
+      getMovieList();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  useEffect(() => {
+    getMovieList();
+  }, []);
 
   return (
     <>
@@ -87,7 +100,7 @@ function App() {
             checked={isNewMovieOscar}
             onChange={e => setIsNewMovieOscar(e.target.checked)}
           />
-          <label>Received an Oscar</label>
+          <label> Received an Oscar</label>
           <button onClick={onSubmitMovie}>Submit Movie</button>
         </div>
         <div>
@@ -100,6 +113,14 @@ function App() {
                 <p>Date: {movie.releaseDate}</p>
                 <button onClick={() => deleteMovie(movie.id)}>
                   Delete Movie
+                </button>
+                <input
+                  placeholder="new itle..."
+                  onChange={e => setUpdatedTitle(e.target.value)}
+                />
+                <button onClick={() => updateMovieTitle(movie.id)}>
+                  {' '}
+                  Update title
                 </button>
               </div>
             );
