@@ -16,6 +16,7 @@ interface Movie {
   receivedAnOscar: boolean;
   releaseDate: number;
   title: string;
+  userId: string;
 }
 
 function App() {
@@ -48,6 +49,7 @@ function App() {
         title: newMovieTitle,
         releaseDate: newReleaseDate,
         receivedAnOscar: isNewMovieOscar,
+        userId: auth?.currentUser?.uid,
       });
       getMovieList();
     } catch (err) {
