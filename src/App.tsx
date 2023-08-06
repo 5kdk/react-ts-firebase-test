@@ -2,7 +2,13 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import { Auth } from './components/Auth';
 import { db } from './config/firebase';
-import { getDocs, collection, addDoc } from 'firebase/firestore';
+import {
+  getDocs,
+  collection,
+  addDoc,
+  deleteDoc,
+  doc,
+} from 'firebase/firestore';
 
 interface Movie {
   id: string;
@@ -51,6 +57,17 @@ function App() {
     }
   };
 
+  const deleteMovie = async (id: string) => {
+    try {
+      const movieDoc = doc(db, 'movies', id);
+      await deleteDoc(movieDoc);
+
+      getMovieList();
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <>
       <div>
@@ -81,6 +98,9 @@ function App() {
                   {movie.title}
                 </h1>
                 <p>Date: {movie.releaseDate}</p>
+                <button onClick={() => deleteMovie(movie.id)}>
+                  Delete Movie
+                </button>
               </div>
             );
           })}
